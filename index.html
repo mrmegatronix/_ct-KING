@@ -699,137 +699,20 @@
             if (el) el.innerHTML = calculateKINGCountdown();
         }, 1000);
 
-        // --- Google Sheets Sync ---
-        function splitCSVLine(line) {
-            const parts = [];
-            let current = '';
-            let inQuotes = false;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"') inQuotes = !inQuotes;
-                else if (char === ',' && !inQuotes) {
-                    parts.push(current.trim());
-                    current = '';
-                } else current += char;
-            }
-            parts.push(current.trim());
-            return parts;
-        }
-
-        /**
-         * Robust CSV Parser handling multi-line fields (Shift+Enter from GSheets)
-         */
-        function parseSlidesCSV(text) {
-            const result = [];
-            let row = [];
-            let col = '';
-            let inQuotes = false;
-
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                const nextChar = text[i + 1];
-
-                if (inQuotes) {
-                    if (char === '"' && nextChar === '"') { col += '"'; i++; }
-                    else if (char === '"') { inQuotes = false; }
-                    else { col += char; }
-                } else {
-                    if (char === '"') { inQuotes = true; }
-                    else if (char === ',') { row.push(col.trim()); col = ''; }
-                    else if (char === '\n' || (char === '\r' && nextChar === '\n')) {
-                        if (char === '\r') i++;
-                        row.push(col.trim());
-                        result.push(row);
-                        row = []; col = '';
-                    } else { col += char; }
-                }
-            }
-            if (col || row.length > 0) { row.push(col.trim()); result.push(row); }
-
-            return result.slice(1).map(clean => {
-                const type = (clean[2] || 'normal').toLowerCase();
-                
-                // RUTHLESS TBC/TBA filtering
-                const scan = [clean[0], clean[1], clean[7], clean[8]].join(' ').toLowerCase();
-                if (scan.includes('tbc') || scan.includes('tba') || 
-                    scan.includes('to be confirmed') || scan.includes('to be announced')) {
-                    return null;
-                }
-
-                return {
-                    title: clean[0] || '',
-                    subtitle: clean[1] || '',
-                    type: type,
-                    duration: parseInt(clean[3]) || 30000,
-                    backgroundImage: clean[4] || '',
-                    overlayImage: clean[5] || '',
-                    qrUrl: clean[6] || '',
-                    bubbleText: clean[7] || '',
-                    winnerPhotos: clean[8] || ''
-                };
-            }).filter(s => s !== null && (s.title || s.backgroundImage || s.overlayImage || s.type === 'avatar' || s.type === 'winners'));
-        }
-
-        async function fetchAndApplySlides() {
-            const loadLocal = async () => {
-                const stored = localStorage.getItem('king_state');
-                if (stored) {
-                    try {
-                        const parsed = JSON.parse(stored);
-                        if (parsed.slides && parsed.slides.length > 0) {
-                            updateState({ slides: parsed.slides, disabledSlides: parsed.disabledSlides || [], overrides: parsed.overrides || {} });
-                            return true;
-                        }
-                    } catch(e) {}
-                }
-                
-                // Final fallback to the hardcoded local-backup.csv
-                try {
-                    const res = await fetch('local-backup.csv?t=' + Date.now());
-                    if (res.ok) {
-                        const csv = await res.text();
-                        const slides = parseSlidesCSV(csv);
-                        if (slides.length > 0) {
-                            updateState({ slides });
-                            return true;
-                        }
-                    }
-                } catch(e) {}
-                return false;
-            };
-
-            if (localStorage.getItem('king_sync_locked') === 'true') {
-                console.log('[KING] Sync skipped: Local CMS locked.');
-                if (state.slides.length === 0) await loadLocal();
-                return;
-            }
-
-            const url = window.KING_CONFIG.GSHEETS_URL;
-            if(!url) return;
-            
-            try {
-                const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
-                if (!res.ok) throw new Error("HTTP Error " + res.status);
-                const csv = await res.text();
-                const slides = parseSlidesCSV(csv);
-                if (slides.length > 0) {
-                    updateState({ slides });
-                } else {
-                    throw new Error("No data in sheet");
-                }
-            } catch (e) {
-                console.error('[KING] Failed to fetch slides:', e);
-                if (state.slides.length === 0) {
-                    const success = await loadLocal();
-                    if (!success) {
-                        updateState({ slides: [{ 
-                                title: "Loading...", 
-                                subtitle: "Please wait.",
-                                cta: ""
-                            }] });
-                    }
-                }
-            }
+        // --- Static Slides Logic ---
+        function loadStaticSlide() {
+            updateState({ slides: [{ 
+                title: "King's Birthday", 
+                subtitle: "Join us for an epic long weekend celebration!",
+                type: "countdown",
+                duration: 30000
+            },
+            {
+                title: "Karaoke Night",
+                subtitle: "Sing your heart out and celebrate the King's Birthday!",
+                type: "qr",
+                duration: 30000
+            }] });
         }
 
         // --- Crown Confetti Logic (DOM-based, like MMR) ---
@@ -918,8 +801,7 @@
                 if (cfg.COLORS.glow) root.style.setProperty('--cfg-glow', cfg.COLORS.glow);
             }
 
-            await fetchAndApplySlides();
-            setInterval(fetchAndApplySlides, 60000); // 1 minute refresh
+            loadStaticSlide();
         }
 
         init();
