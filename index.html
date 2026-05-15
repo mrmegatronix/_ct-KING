@@ -48,13 +48,9 @@
             opacity: 0.6;
             z-index: -1;
             filter: saturate(1.2) contrast(1.1);
-            animation: slow-zoom 60s linear infinite alternate;
         }
 
-        @keyframes slow-zoom {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.1); }
-        }
+
 
         /* Mesh Gradient Layer */
         .mesh-gradient {
@@ -70,14 +66,9 @@
                 radial-gradient(at 0% 100%, hsla(35, 100%, 50%, 0.15) 0, transparent 50%);
             z-index: -2;
             filter: blur(40px);
-            animation: mesh-move 20s ease-in-out infinite alternate;
         }
 
-        @keyframes mesh-move {
-            0% { transform: scale(1) translate(0, 0); }
-            50% { transform: scale(1.2) translate(2%, 2%); }
-            100% { transform: scale(1) translate(-2%, -2%); }
-        }
+
 
         /* Superior Glowing Effect overlay */
         .king-bg-glow {
@@ -92,17 +83,11 @@
             z-index: 1;
             mix-blend-mode: color-dodge;
             filter: blur(15px) brightness(1.5);
-            animation: epic-pulse-glow 8s infinite alternate ease-in-out;
             pointer-events: none;
             opacity: 0.5;
         }
 
-        @keyframes epic-pulse-glow {
-            0% { opacity: 0.3; transform: scale(1) rotate(0deg); filter: blur(10px) brightness(1.2) hue-rotate(0deg); }
-            33% { opacity: 0.7; transform: scale(1.08) rotate(2deg); filter: blur(20px) brightness(1.6) hue-rotate(10deg); }
-            66% { opacity: 0.5; transform: scale(1.04) rotate(-2deg); filter: blur(15px) brightness(1.4) hue-rotate(-10deg); }
-            100% { opacity: 0.3; transform: scale(1) rotate(0deg); filter: blur(10px) brightness(1.2) hue-rotate(0deg); }
-        }
+
 
         /* Gold Dust / Particle Layer */
         #gold-dust {
@@ -133,15 +118,11 @@
             );
             z-index: 0;
             transform: translate(-50%, -50%);
-            animation: rotate-rays 120s linear infinite;
             pointer-events: none;
             mix-blend-mode: screen;
         }
 
-        @keyframes rotate-rays {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
+
 
         /* Ambient Confetti Container */
         #confetti-container {
@@ -193,14 +174,9 @@
         .slide.pan-down {
             background-size: 100% auto !important;
             background-position: top center !important;
-            animation: panDownKING 45s linear forwards;
         }
 
-        @keyframes panDownKING {
-            0% { background-position: top center; }
-            80% { background-position: bottom center; }
-            100% { background-position: bottom center; }
-        }
+
 
         .slide.active {
             opacity: 1;
@@ -790,7 +766,7 @@
 
         // --- Crown Confetti Logic (DOM-based, like MMR) ---
         const confettiContainer = document.getElementById('confetti-container');
-        const crowns = ['👑', '🤴', '👸', '👑', '🤴', '👸', 'LOGO'];
+        const crowns = ['👑', 'LOGO'];
 
         function spawnAmbientConfetti() {
             const count = Math.random() > 0.8 ? 3 : 1;
@@ -828,7 +804,7 @@
         }
 
         function createConfettiBurst() {
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 30; i++) {
                 const symbol = crowns[Math.floor(Math.random() * crowns.length)];
                 const el = document.createElement('div');
                 el.style.position = 'absolute';
@@ -863,7 +839,7 @@
         }
 
         // Start ambient confetti loop (More consistent rain)
-        setInterval(spawnAmbientConfetti, 400);
+        setInterval(spawnAmbientConfetti, 533);
         
         // Manual burst still exists for specific events if needed
 
