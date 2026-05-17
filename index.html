@@ -30,7 +30,10 @@
         #display-container {
             width: 1920px;
             height: 1080px;
-            position: relative;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             transform-origin: center center;
             overflow: hidden;
             background-color: var(--cream);
@@ -847,7 +850,7 @@
             function resize() {
                 const container = document.getElementById('display-container');
                 const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
-                container.style.transform = `scale(${scale})`;
+                container.style.transform = `translate(-50%, -50%) scale(${scale})`;
             }
             window.addEventListener('resize', resize);
             resize();
